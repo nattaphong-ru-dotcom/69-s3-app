@@ -11,6 +11,7 @@
     "develop": "strapi develop",
     "start": "strapi start",
     "strapi": "strapi",
+    "test:lifecycle": "node scripts/e2e-student-lifecycle.js",
     "upgrade": "npx @strapi/upgrade latest",
     "upgrade:dry": "npx @strapi/upgrade latest --dry"
   },

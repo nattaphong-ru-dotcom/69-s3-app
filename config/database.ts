@@ -66,6 +66,14 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Database 
       ...connections[client],
       acquireConnectionTimeout: env.int('DATABASE_CONNECTION_TIMEOUT', 60000),
     },
+    // Never drop tables/columns/indexes that were removed from a schema.json.
+    // Strapi defaults this to true, which silently deletes real data whenever a
+    // field is renamed or deleted. Schema removals must go through
+    // database/migrations/* instead.
+    settings: {
+      forceMigration: env.bool('DATABASE_FORCE_MIGRATION', false),
+      runMigrations: env.bool('DATABASE_RUN_MIGRATIONS', true),
+    },
   };
 };
 
