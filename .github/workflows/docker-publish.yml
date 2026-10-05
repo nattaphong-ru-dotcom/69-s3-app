@@ -8,7 +8,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: prawee/69-s3-app
+  IMAGE_NAME: nattaphong-ru-dotcom/69-s3-app
 
 jobs:
   docker:
@@ -60,7 +60,12 @@ jobs:
       - name: Build and push
         shell: pwsh
         run: |
-          $npmArgs = @('run', 'build:image:push', '--', '--tag', '${{ steps.tags.outputs.tag }}')
+          $npmArgs = @(
+            'run', 'build:image:push', '--',
+            '--registry', '${REGISTRY}',
+            '--image', '${IMAGE_NAME}',
+            '--tag', '${{ steps.tags.outputs.tag }}'
+          )
           if ('${{ steps.tags.outputs.aliases }}') {
             $npmArgs += @('--alias', '${{ steps.tags.outputs.aliases }}'.Split(':')[-1])
           }

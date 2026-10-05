@@ -11,8 +11,8 @@
  *   npm run build:image:push
  *   node scripts/docker/build-image.js --tag v1.2.3 --platform linux/amd64,linux/arm64
  *
- * Push target defaults to ghcr.io/prawee/69-s3-app. Authenticate beforehand by
- * setting GHCR_TOKEN to a classic PAT with `write:packages`, or by running
+ * Push target defaults to ghcr.io/nattaphong-ru-dotcom/69-s3-app. Authenticate
+ * by setting GHCR_TOKEN to a classic PAT with `write:packages`, or by running
  * `docker login ghcr.io` once.
  */
 const { spawnSync } = require('node:child_process');
@@ -20,7 +20,7 @@ const path = require('node:path');
 
 const PROJECT_ROOT = path.join(__dirname, '..', '..');
 const DEFAULT_REGISTRY = 'ghcr.io';
-const DEFAULT_IMAGE = 'prawee/69-s3-app';
+const DEFAULT_IMAGE = 'nattaphong-ru-dotcom/69-s3-app';
 const DEFAULT_PLATFORMS = ['linux/amd64', 'linux/arm64'];
 
 // --- Argument parsing ------------------------------------------------------
