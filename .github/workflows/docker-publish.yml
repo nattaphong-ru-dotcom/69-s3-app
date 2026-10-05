@@ -58,7 +58,9 @@ jobs:
 
       - name: Build and push
         run: |
-          args=(build:image:push --registry "$REGISTRY" --image "$IMAGE_NAME" --tag '${{ steps.tags.outputs.tag }}')
+          # The bare `--` is required so npm forwards the flags to the script
+          # instead of consuming them as npm's own options.
+          args=(build:image:push -- --registry "$REGISTRY" --image "$IMAGE_NAME" --tag '${{ steps.tags.outputs.tag }}')
           if [ -n '${{ steps.tags.outputs.aliases }}' ]; then
             args+=(--alias '${{ steps.tags.outputs.aliases }}')
           fi
