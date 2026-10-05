@@ -42,45 +42,37 @@ jobs:
 
       - name: Resolve tags
         id: tags
-        shell: pwsh
         run: |
-          $image = "${REGISTRY}/${IMAGE_NAME}"
-          if ($env:GITHUB_REF_TYPE -eq 'tag') {
-            $tag = $env:GITHUB_REF_NAME
-            echo "tag=$tag" >> $env:GITHUB_OUTPUT
-            echo "aliases=$image:latest" >> $env:GITHUB_OUTPUT
-          else {
-            $branch = $env:GITHUB_REF_NAME -replace '[^A-Za-z0-9._-]', '-'
-            echo "tag=$branch" >> $env:GITHUB_OUTPUT
-            $aliases = ""
-            if ($env:GITHUB_REF_NAME -eq $env:GITHUB_DEFAULT_BRANCH) { $aliases = "$image:latest" }
-            echo "aliases=$aliases" >> $env:GITHUB_OUTPUT
-          }
+          if [ "$GITHUB_REF_TYPE" = "tag" ]; then
+            tag="$GITHUB_REF_NAME"
+            aliases="latest"
+          else
+            tag="$(echo "$GITHUB_REF_NAME" | tr -c 'A-Za-z0-9._-' '-')"
+            aliases=""
+            if [ "$GITHUB_REF_NAME" = "$GITHUB_DEFAULT_BRANCH" ]; then
+              aliases="latest"
+            fi
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "aliases=$aliases" >> "$GITHUB_OUTPUT"
 
       - name: Build and push
-        shell: pwsh
         run: |
-          $npmArgs = @(
-            'run', 'build:image:push', '--',
-            '--registry', '${REGISTRY}',
-            '--image', '${IMAGE_NAME}',
-            '--tag', '${{ steps.tags.outputs.tag }}'
-          )
-          if ('${{ steps.tags.outputs.aliases }}') {
-            $npmArgs += @('--alias', '${{ steps.tags.outputs.aliases }}'.Split(':')[-1])
-          }
-          npm $npmArgs
+          args=(build:image:push --registry "$REGISTRY" --image "$IMAGE_NAME" --tag '${{ steps.tags.outputs.tag }}')
+          if [ -n '${{ steps.tags.outputs.aliases }}' ]; then
+            args+=(--alias '${{ steps.tags.outputs.aliases }}')
+          fi
+          npm run "${args[@]}"
 
       - name: Test image
-        shell: pwsh
         run: |
-          docker run -d --name test-app -p 1337:1337 `
-            -e APP_KEYS="test1,test2,test3,test4" `
-            -e API_TOKEN_SALT=testtoken `
-            -e ADMIN_JWT_SECRET=testadmin `
-            -e TRANSFER_TOKEN_SALT=testtransfer `
-            -e JWT_SECRET=testjwt `
-            -e ENCRYPTION_KEY=0123456789abcdef0123456789abcdef `
-            "${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.tags.outputs.tag }}"
-          Start-Sleep -Seconds 30
-          curl.exe -f http://localhost:1337/_health
+          docker run -d --name test-app -p 1337:1337 \
+            -e APP_KEYS="test1,test2,test3,test4" \
+            -e API_TOKEN_SALT=testtoken \
+            -e ADMIN_JWT_SECRET=testadmin \
+            -e TRANSFER_TOKEN_SALT=testtransfer \
+            -e JWT_SECRET=testjwt \
+            -e ENCRYPTION_KEY=0123456789abcdef0123456789abcdef \
+            "$REGISTRY/$IMAGE_NAME:${{ steps.tags.outputs.tag }}"
+          sleep 30
+          curl -f http://localhost:1337/_health
